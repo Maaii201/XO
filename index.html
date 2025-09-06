@@ -103,20 +103,13 @@
   <script>
     /*******************************
      * CONFIGURE AQUI (obrigatório)
-     *******************************
-     * Substitua por suas credenciais do projeto Supabase:
-     * - SUPABASE_URL  (ex: https://xyzcompany.supabase.co)
-     * - SUPABASE_ANON_KEY  (publishable / anon key)
-     *
-     * NÃO use service_role em cliente.
-     */
+     *******************************/
     const SUPABASE_URL = "https://zmczgjkuqczobdwiytii.supabase.co"; // <- coloque sua URL
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptY3pnamt1cWN6b2Jkd2l5dGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxOTExOTIsImV4cCI6MjA3Mjc2NzE5Mn0.xvD1wRRy8dJ7V_c0gFC3CA9yHLB7AJIHLEMfnjTYY-0"; // <- coloque sua anon key
 
-    // Inicializa cliente Supabase
-    const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Inicializa cliente Supabase (correto agora)
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Nome do bucket configurado no Supabase Storage (crie um 'uploads' público)
     const BUCKET = "uploads";
 
     const fileInput = document.getElementById("file");
@@ -129,7 +122,6 @@
     // carregar gallery ao abrir
     fetchAndRender();
 
-    // Upload handler
     uploadBtn.addEventListener("click", async () => {
       const file = fileInput.files[0];
       const title = nameInput.value && nameInput.value.trim();
@@ -139,26 +131,22 @@
       setStatus("Enviando...");
 
       try {
-        // cria um nome único para o arquivo (timestamp + original)
         const path = `${Date.now()}_${sanitize(file.name)}`;
 
-        // Upload para o bucket (usa File diretamente)
-        const { data: uploadData, error: uploadError } = await supabase
+        const { error: uploadError } = await supabase
           .storage
           .from(BUCKET)
           .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
 
         if (uploadError) throw uploadError;
 
-        // pega URL pública (bucket precisa ser público)
         const { data: publicData } = supabase
           .storage
           .from(BUCKET)
           .getPublicUrl(path);
 
-        const publicUrl = publicData?.publicUrl || publicData?.publicURL || null;
+        const publicUrl = publicData?.publicUrl || null;
 
-        // gravar metadados na tabela 'posts'
         const { error: insertError } = await supabase
           .from("posts")
           .insert({
@@ -170,27 +158,22 @@
 
         if (insertError) throw insertError;
 
-        // limpa inputs e recarrega gallery
         fileInput.value = "";
         nameInput.value = "";
         setStatus("Enviado com sucesso ✅");
         await fetchAndRender();
       } catch (err) {
-        console.error(err);
         setStatus("Erro: " + (err.message || JSON.stringify(err)));
       }
     });
 
-    // pesquisa ao digitar
     searchEl.addEventListener("input", debounce(() => fetchAndRender(), 300));
 
-    // busca posts e renderiza
     async function fetchAndRender(){
       setStatus("Carregando...");
       const q = searchEl.value.trim();
 
       try {
-        // busca na tabela posts; ordena por mais recentes
         let { data, error } = await supabase
           .from("posts")
           .select("*")
@@ -205,7 +188,6 @@
         renderGallery(data || []);
         setStatus(`Mostrando ${ (data||[]).length } item(s).`);
       } catch (err) {
-        console.error(err);
         setStatus("Erro ao buscar: " + (err.message || JSON.stringify(err)));
       }
     }
@@ -224,7 +206,6 @@
         const thumb = document.createElement("div");
         thumb.className = "thumb";
 
-        // decide se é vídeo
         if ((item.content_type||"").startsWith("video")) {
           const v = document.createElement("video");
           v.src = item.public_url || buildUrl(item.path);
@@ -255,26 +236,20 @@
       });
     }
 
-    // se public_url não tiver sido salvo, constrói a url manualmente (fallback)
     function buildUrl(path){
       if(!path) return "";
-      // Forma pública: https://{PROJECT}.supabase.co/storage/v1/object/public/{BUCKET}/{path}
-      // OBS: troque SUPABASE_URL para o formato correto cadastrado em SUPABASE_URL
       const base = SUPABASE_URL.replace(/\/$/,"");
       return `${base}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(path)}`;
     }
 
     function setStatus(t){ statusEl.textContent = t; }
 
-    // remove caracteres problemáticos do filename
     function sanitize(s){ return s.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9._-]/g, "") }
 
-    // debounce util
     function debounce(fn, wait=200){
       let t;
       return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), wait) }
     }
-
   </script>
 </body>
 </html>
