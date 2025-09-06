@@ -1,252 +1,280 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>XO — Explore mídia</title>
-<style>
-:root {
-  --xo-red:#e60023; --xo-red-600:#cc001f; --xo-bg:#ffffff; --xo-text:#111; --xo-muted:#6b7280;
-  --xo-card:#f8f8f8; --bg-image:url('bg.jpg');
-}
-[data-theme="dark"]{
-  --xo-bg:#0b0b0c; --xo-text:#f2f2f2; --xo-muted:#9aa0a6; --xo-card:#141416;
-}
-*{box-sizing:border-box;}
-html,body{height:100%;}
-body{
-  margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans; 
-  background:var(--xo-bg) no-repeat fixed; color:var(--xo-text);
-}
-body::before{
-  content:""; position:fixed; inset:0; background-image:var(--bg-image);
-  background-size:cover; background-position:center; opacity:0.06; pointer-events:none; filter:saturate(0.7);
-}
-header{
-  position:sticky; top:0; z-index:50;
-  backdrop-filter:blur(10px);
-  background: color-mix(in oklab,var(--xo-bg) 75%,transparent);
-  border-bottom:1px solid color-mix(in oklab,var(--xo-text) 10%,transparent);
-}
-.wrap{ max-width:1200px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; gap:12px; }
-.brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--xo-text); }
-.brand span{ font-weight:800; letter-spacing:0.4px; font-size:1.15rem; }
-.search{ flex:1; display:flex; }
-.search input{
-  width:100%; padding:10px 12px; border-radius:999px; border:1px solid transparent;
-  background:var(--xo-card); color:var(--xo-text); outline:none;
-}
-.search input::placeholder{ color:var(--xo-muted); }
-.actions{ display:flex; align-items:center; gap:8px; }
-button.icon{
-  border:1px solid color-mix(in oklab,var(--xo-text) 10%,transparent);
-  background:var(--xo-card); color:var(--xo-text); padding:8px 12px; border-radius:999px; cursor:pointer;
-}
-button.icon:hover{ transform:translateY(-1px); }
-main{ max-width:1400px; margin:16px auto; padding:0 12px 64px; }
-.grid{ column-width:280px; column-gap:16px; }
-.pin{
-  display:inline-block; width:100%; margin:0 0 16px; break-inside:avoid;
-  background:var(--xo-card); border-radius:16px; overflow:hidden; position:relative;
-  border:1px solid color-mix(in oklab,var(--xo-text) 8%,transparent);
-  box-shadow:0 6px 20px rgba(0,0,0,0.06);
-}
-.pin .media{ display:block; width:100%; height:auto; }
-.pin video.media{ width:100%; height:auto; display:block; }
-.pin .overlay{
-  position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:flex-end;
-  gap:8px; padding:10px; opacity:0; transition:opacity .2s;
-  background: linear-gradient(to bottom, rgba(0,0,0,.35), transparent 45%, transparent 70%, rgba(0,0,0,.25));
-}
-.pin:hover .overlay{ opacity:1; }
-.btn{
-  display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:700;
-  border-radius:999px; padding:8px 12px; border:0; cursor:pointer;
-  background:var(--xo-red); color:white;
-}
-.btn:hover{ background:var(--xo-red-600); }
-.btn.secondary{ background:rgba(255,255,255,.92); color:#111; }
-.load-more{ display:block; margin:24px auto; }
-.modal{ position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:100; }
-.modal.open{ display:flex; }
-.modal .viewer{ max-width:95vw; max-height:88vh; }
-.modal img,.modal video{ max-width:100%; max-height:88vh; display:block; border-radius:12px; }
-.modal .topbar{ position:absolute; top:16px; left:16px; right:16px; display:flex; justify-content:flex-end; gap:8px; }
-footer{ text-align:center; color:var(--xo-muted); padding:32px 12px; font-size:14px; }
-@media(max-width:600px){ .search{ display:none; } }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Galeria Anônima</title>
+  <!-- Supabase CDN (v2) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#0a0a0a;
+      --panel:#121212;
+      --muted:#8a8a8a;
+      --accent:#bdbdbd;
+      --glass: rgba(255,255,255,0.03);
+      --radius:10px;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .app{
+      max-width:1100px;margin:28px auto;padding:20px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+      min-height:80vh;
+    }
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{margin:0;font-size:20px;color:#fff}
+    .controls{display:flex;gap:12px;align-items:center}
+    .search{
+      background:var(--panel);border:1px solid rgba(255,255,255,0.04);
+      padding:8px 12px;border-radius:8px;color:var(--accent);min-width:220px;
+    }
+    .uploader{
+      display:flex;gap:8px;align-items:center;
+    }
+    input[type="file"]{display:none}
+    .btn{
+      background:#222;border:1px solid rgba(255,255,255,0.04);color:var(--accent);
+      padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600
+    }
+    .btn:active{transform:translateY(1px)}
+    .meta{display:flex;gap:8px;align-items:center}
+    .input-name{
+      background:transparent;border:1px dashed rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--accent);
+      min-width:180px;
+    }
+
+    main{margin-top:14px}
+    .grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;
+    }
+    .card{
+      background:var(--glass);border-radius:10px;padding:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .thumb{
+      background:#000;border-radius:6px;min-height:130px;display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+    }
+    .thumb img, .thumb video{width:100%;height:100%;object-fit:cover;display:block}
+    .name{font-size:14px;color:#fff;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+    .sub{font-size:12px;color:var(--muted)}
+    .actions{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+    .small{font-size:12px;color:var(--muted)}
+    .notice{font-size:13px;color:var(--muted);margin-top:8px}
+    footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+    @media(max-width:520px){
+      .controls{flex-direction:column;align-items:stretch}
+      header{align-items:flex-start}
+    }
+  </style>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="#">XO</a>
-<div class="search"><input id="q" type="search" placeholder="Buscar por nome do arquivo…"/></div>
-<div class="actions">
-<button id="themeBtn" class="icon" title="Alternar tema">🌓</button>
-<a class="btn" href="#como-funciona" title="Sobre">Sobre</a>
-</div>
-</div>
-</header>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Galeria Anônima</h1>
+        <div class="notice">Envie imagens / GIFs / vídeos. Não precisa de conta. Pesquise por nome.</div>
+      </div>
 
-<main>
-<div id="grid" class="grid" aria-live="polite"></div>
-<button id="loadMore" class="btn load-more">Carregar mais</button>
+      <div class="controls">
+        <input id="search" class="search" placeholder="Pesquisar por nome..." />
+        <div class="uploader">
+          <input id="file" type="file" accept="image/*,video/*,image/gif" />
+          <label for="file" class="btn">Escolher arquivo</label>
+          <input id="name" class="input-name" placeholder="Nome do arquivo (obrigatório)" />
+          <button id="uploadBtn" class="btn">Enviar</button>
+        </div>
+      </div>
+    </header>
 
-<section id="como-funciona" style="max-width:900px;margin:40px auto 0;padding:0 12px;">
-<h2>Welcome</h2>
-<p>Esta é sua galeria</p>
-</section>
-</main>
+    <main>
+      <div id="status" class="small"></div>
+      <div id="gallery" class="grid"></div>
+    </main>
 
-<footer>
-<p>XO © <span id="year"></span> • Feito com Supabase • Sem cadastro, só curtir ✨</p>
-</footer>
+    <footer>
+      Feito com Supabase • Tema preto/cinza • ⚠️ Não hospede chaves secretas no cliente.
+    </footer>
+  </div>
 
-<div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Visualizador">
-<div class="topbar">
-<a id="downloadBtn" class="btn secondary" href="#" download>⤓ Baixar</a>
-<button id="closeBtn" class="btn" aria-label="Fechar">Fechar ✕</button>
-</div>
-<div id="viewer" class="viewer"></div>
-</div>
+  <script>
+    /*******************************
+     * CONFIGURE AQUI (obrigatório)
+     *******************************
+     * Substitua por suas credenciais do projeto Supabase:
+     * - SUPABASE_URL  (ex: https://xyzcompany.supabase.co)
+     * - SUPABASE_ANON_KEY  (publishable / anon key)
+     *
+     * NÃO use service_role em cliente.
+     */
+    const SUPABASE_URL = "https://zmczgjkuqczobdwiytii.supabase.co"; // <- coloque sua URL
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptY3pnamt1cWN6b2Jkd2l5dGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxOTExOTIsImV4cCI6MjA3Mjc2NzE5Mn0.xvD1wRRy8dJ7V_c0gFC3CA9yHLB7AJIHLEMfnjTYY-0"; // <- coloque sua anon key
 
-<script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+    // Inicializa cliente Supabase
+    const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const SUPABASE_URL = "https://aqqwuibopikioqzvaxpm.supabase.co"; 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcXd1aWJvcGlraW9xenZheHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxMjU2MjYsImV4cCI6MjA3MjcwMTYyNn0.Nea6TCznmm6yLmMy0WiTR2dcjq6cxDvFJ90oM04NLwM";
-const BUCKET = "xo-media";
+    // Nome do bucket configurado no Supabase Storage (crie um 'uploads' público)
+    const BUCKET = "uploads";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const fileInput = document.getElementById("file");
+    const nameInput = document.getElementById("name");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const galleryEl = document.getElementById("gallery");
+    const statusEl = document.getElementById("status");
+    const searchEl = document.getElementById("search");
 
-const grid = document.getElementById('grid');
-const loadMoreBtn = document.getElementById('loadMore');
-const q = document.getElementById('q');
-const modal = document.getElementById('modal');
-const viewer = document.getElementById('viewer');
-const closeBtn = document.getElementById('closeBtn');
-const downloadBtn = document.getElementById('downloadBtn');
+    // carregar gallery ao abrir
+    fetchAndRender();
 
-const themeBtn = document.getElementById('themeBtn');
-const savedTheme = localStorage.getItem('xo-theme');
-if(savedTheme) document.documentElement.setAttribute('data-theme',savedTheme);
-themeBtn.addEventListener('click',()=>{ 
-  const current=document.documentElement.getAttribute('data-theme');
-  const next=current==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('xo-theme',next);
-});
+    // Upload handler
+    uploadBtn.addEventListener("click", async () => {
+      const file = fileInput.files[0];
+      const title = nameInput.value && nameInput.value.trim();
+      if (!file) return alert("Escolha um arquivo para enviar.");
+      if (!title) return alert("Coloque um nome para poder pesquisar depois.");
 
-const IMAGE_EXT=['jpg','jpeg','png','webp','gif','avif'];
-const VIDEO_EXT=['mp4','webm','ogv','ogg','mov'];
-let allItems=[];
+      setStatus("Enviando...");
 
-function extOf(name){ const i=name.lastIndexOf('.'); return i>=0?name.slice(i+1).toLowerCase():''; }
-function isImage(name){ return IMAGE_EXT.includes(extOf(name)); }
-function isVideo(name){ return VIDEO_EXT.includes(extOf(name)); }
+      try {
+        // cria um nome único para o arquivo (timestamp + original)
+        const path = `${Date.now()}_${sanitize(file.name)}`;
 
-function itemToNode(item){
-  const {name}=item;
-  if(!name) return null;
-  const {data:pub}=supabase.storage.from(BUCKET).getPublicUrl(name);
-  const url=pub.publicUrl;
+        // Upload para o bucket (usa File diretamente)
+        const { data: uploadData, error: uploadError } = await supabase
+          .storage
+          .from(BUCKET)
+          .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
 
-  const card=document.createElement('figure');
-  card.className='pin';
-  card.tabIndex=0;
-  card.setAttribute('data-name',name);
+        if (uploadError) throw uploadError;
 
-  const overlay=document.createElement('div');
-  overlay.className='overlay';
-  const openBtn=document.createElement('button');
-  openBtn.className='btn';
-  openBtn.textContent='Abrir';
-  overlay.appendChild(openBtn);
+        // pega URL pública (bucket precisa ser público)
+        const { data: publicData } = supabase
+          .storage
+          .from(BUCKET)
+          .getPublicUrl(path);
 
-  const dl=document.createElement('a');
-  dl.className='btn secondary';
-  dl.textContent='Baixar';
-  dl.href=url+'?download';
-  dl.download=name;
-  overlay.appendChild(dl);
+        const publicUrl = publicData?.publicUrl || publicData?.publicURL || null;
 
-  if(isImage(name)||name.toLowerCase().endsWith('.gif')){
-    const img=document.createElement('img');
-    img.src=url; img.alt=name; img.loading='lazy'; img.className='media';
-    card.appendChild(img);
-  } else if(isVideo(name)){
-    const vid=document.createElement('video');
-    vid.src=url; vid.muted=true; vid.playsInline=true; vid.autoplay=false; vid.loop=true; vid.controls=false; vid.className='media';
-    card.appendChild(vid);
-  } else {
-    const unknown=document.createElement('div');
-    unknown.style.padding='24px';
-    unknown.textContent=`Arquivo: ${name}`;
-    card.appendChild(unknown);
-  }
+        // gravar metadados na tabela 'posts'
+        const { error: insertError } = await supabase
+          .from("posts")
+          .insert({
+            name: title,
+            path: path,
+            content_type: file.type,
+            public_url: publicUrl
+          });
 
-  card.appendChild(overlay);
-  const open=()=>openModal(url,name);
-  card.addEventListener('click',open);
-  card.addEventListener('keypress',e=>{if(e.key==='Enter') open();});
-  openBtn.addEventListener('click',e=>{ e.stopPropagation(); open(); });
+        if (insertError) throw insertError;
 
-  return card;
-}
+        // limpa inputs e recarrega gallery
+        fileInput.value = "";
+        nameInput.value = "";
+        setStatus("Enviado com sucesso ✅");
+        await fetchAndRender();
+      } catch (err) {
+        console.error(err);
+        setStatus("Erro: " + (err.message || JSON.stringify(err)));
+      }
+    });
 
-function openModal(url,name){
-  viewer.innerHTML='';
-  if(isImage(name)||name.toLowerCase().endsWith('.gif')){
-    const img=document.createElement('img');
-    img.src=url; img.alt=name; viewer.appendChild(img);
-  } else if(isVideo(name)){
-    const vid=document.createElement('video');
-    vid.src=url; vid.controls=true; vid.autoplay=true; vid.className='viewer-media'; viewer.appendChild(vid);
-  }
-  downloadBtn.href=url+'?download';
-  downloadBtn.download=name;
-  modal.classList.add('open');
-}
+    // pesquisa ao digitar
+    searchEl.addEventListener("input", debounce(() => fetchAndRender(), 300));
 
-function closeModal(){
-  const v=viewer.querySelector('video');
-  if(v){v.pause();v.src='';}
-  modal.classList.remove('open');
-  viewer.innerHTML='';
-}
+    // busca posts e renderiza
+    async function fetchAndRender(){
+      setStatus("Carregando...");
+      const q = searchEl.value.trim();
 
-modal.addEventListener('click',e=>{if(e.target===modal) closeModal();});
-closeBtn.addEventListener('click',closeModal);
-document.addEventListener('keydown',e=>{if(e.key==='Escape' && modal.classList.contains('open')) closeModal();});
+      try {
+        // busca na tabela posts; ordena por mais recentes
+        let { data, error } = await supabase
+          .from("posts")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-q.addEventListener('input',()=>{
-  const term=q.value.trim().toLowerCase();
-  render(term?allItems.filter(x=>x.name.toLowerCase().includes(term)):allItems);
-});
+        if (error) throw error;
+        if (q) {
+          const qLower = q.toLowerCase();
+          data = data.filter(p => (p.name || "").toLowerCase().includes(qLower));
+        }
 
-function render(items){
-  grid.innerHTML='';
-  const frag=document.createDocumentFragment();
-  for(const it of items){
-    const node=itemToNode(it);
-    if(node) frag.appendChild(node);
-  }
-  grid.appendChild(frag);
-  if(items.length===0){
-    grid.innerHTML='<p style="text-align:center;color:var(--xo-muted);">Nenhum arquivo encontrado.</p>';
-  }
-}
+        renderGallery(data || []);
+        setStatus(`Mostrando ${ (data||[]).length } item(s).`);
+      } catch (err) {
+        console.error(err);
+        setStatus("Erro ao buscar: " + (err.message || JSON.stringify(err)));
+      }
+    }
 
-async function loadPage(){
-  const {data,error}=await supabase.storage.from(BUCKET).list('',{sortBy:{column:'created_at',order:'desc'}});
-  if(error){console.error("Erro Supabase:",error.message); return;}
-  allItems=(data||[]).filter(x=>isImage(x.name)||isVideo(x.name)||x.name.toLowerCase().endsWith('.gif'));
-  render(allItems);
-  loadMoreBtn.style.display='none';
-}
+    function renderGallery(items){
+      galleryEl.innerHTML = "";
+      if (!items.length) {
+        galleryEl.innerHTML = '<div style="color:var(--muted)">Sem uploads ainda.</div>';
+        return;
+      }
 
-document.getElementById('year').textContent=new Date().getFullYear();
-loadPage();
-</script>
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const thumb = document.createElement("div");
+        thumb.className = "thumb";
+
+        // decide se é vídeo
+        if ((item.content_type||"").startsWith("video")) {
+          const v = document.createElement("video");
+          v.src = item.public_url || buildUrl(item.path);
+          v.controls = true;
+          v.preload = "metadata";
+          thumb.appendChild(v);
+        } else {
+          const img = document.createElement("img");
+          img.src = item.public_url || buildUrl(item.path);
+          img.alt = item.name || "sem nome";
+          thumb.appendChild(img);
+        }
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "name";
+        nameEl.textContent = item.name || "—";
+
+        const sub = document.createElement("div");
+        sub.className = "sub";
+        const created = item.created_at ? new Date(item.created_at).toLocaleString() : "";
+        sub.textContent = `${item.content_type || ""} · ${created}`;
+
+        card.appendChild(thumb);
+        card.appendChild(nameEl);
+        card.appendChild(sub);
+
+        galleryEl.appendChild(card);
+      });
+    }
+
+    // se public_url não tiver sido salvo, constrói a url manualmente (fallback)
+    function buildUrl(path){
+      if(!path) return "";
+      // Forma pública: https://{PROJECT}.supabase.co/storage/v1/object/public/{BUCKET}/{path}
+      // OBS: troque SUPABASE_URL para o formato correto cadastrado em SUPABASE_URL
+      const base = SUPABASE_URL.replace(/\/$/,"");
+      return `${base}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(path)}`;
+    }
+
+    function setStatus(t){ statusEl.textContent = t; }
+
+    // remove caracteres problemáticos do filename
+    function sanitize(s){ return s.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9._-]/g, "") }
+
+    // debounce util
+    function debounce(fn, wait=200){
+      let t;
+      return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), wait) }
+    }
+
+  </script>
 </body>
 </html>
